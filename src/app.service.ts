@@ -43,9 +43,21 @@ export class AppService {
   }
 
 
-  async createProduct (product:any){
-    return this.product.send({ cmd: 'add_product' }, product).toPromise().then(data => data);
+
+  async createCategory (category:any){
+    return this.product.send({ cmd: 'create_category' }, category).toPromise().then(data => data);
   }
+
+  async createProduct (product:any, token:string){
+    // Getting user info with token from auth microservice
+    const user = await this.validateUser(token);
+    
+    // pass product merchant user id
+    product.merchant = user._id;
+
+    return this.product.send({ cmd: 'create_product' }, product).toPromise().then(data => data);
+  }
+
 
 
   async validateUser (token:string){
