@@ -87,4 +87,37 @@ export class AppController {
     const result = await this.appService.buyProduct(body, access_token);
     return res.status(200).json(result);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get_all_orders')
+  async getAllOrders(@Res() res: Response): Promise<any> {
+    const result = await this.appService.getAllOrders();
+    return res.status(200).json(result);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get_all_products')
+  async getAllProducts(@Query() query:any, @Res() res: Response): Promise<any> {
+    const {limit, page, search, sortBy, sortType} = query;
+    const result = await this.appService.getAllProducts(limit, page, search, sortBy, sortType);
+    return res.status(200).json(result);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get_all_loans')
+  async getAllLoans(@Res() res: Response): Promise<any> {
+    const result = await this.appService.getAllLoans();
+    return res.status(200).json(result);
+  }
+
+
+  @UseGuards(JwtAuthGuard)
+  @Get('get_all_invoices')
+  async getAllInvoices(@Res() res: Response): Promise<any> {
+    const result = await this.appService.getAllInvoices();
+    return res.status(200).json(result);
+  }
+
+  
 }

@@ -16,18 +16,8 @@ export class AppService {
       search,
     };
 
-    const record = new RmqRecordBuilder()
-      .setData(data)
-      .setOptions({
-        headers: {
-          authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjYyNmZhYWRkYTE2NTVlOWI5ZmU1MzBlMiIsImZ1bGxOYW1lIjoic2FsYXdtIiwibWVyY2hhbnRUeXBlIjoiYnV5ZXIiLCJlbWFpbCI6InRlc3d0QGNvZGUuZWR1LmF6IiwicGhvbmUiOiI5OTQ3NzYwOTc5MzkiLCJwYXNzd29yZCI6IiQyYSQxMCRZLlJ1QWtsc09TR0ZNYUNUVHVxSzUuZWZoU3FhQ2h0ajVJLmZCazRCVHdFRFVJMC5SYkdWLiIsImFkZHJlc3MiOiJzYWxzbGEiLCJvd25lck5hbWUiOiJUZWxNb2JpbGUiLCJjcmVhdGVkQXQiOiIyMDIyLTA1LTAyVDA5OjUzOjA4LjQyN1oiLCJ1cGRhdGVkQXQiOiIyMDIyLTA1LTAyVDA5OjUzOjA4LjQyN1oiLCJpc0RlbGV0ZWQiOmZhbHNlLCJiYWxhbmNlIjowLCJfX3YiOjB9LCJpYXQiOjE2NTE0OTM5MDcsImV4cCI6MTY1MTUzNzEwN30.B1SqYyQknlMYMpcZaVhvx6qsEBEsRLEAHpo44v8WKr8',
-        },
-        priority: 1,
-      })
-      .build();
-    const result = this.user
-      .send({ cmd: 'get_users' }, record)
+    const result = await this.user
+      .send({ cmd: 'get_users' }, { limit, page, search })
       .toPromise()
       .then((data) => data);
     return result;
@@ -73,12 +63,10 @@ export class AppService {
     // Getting user info with token from auth microservice
     const user = await this.validateUser(token);
 
-
     const product = await this.product
       .send({ cmd: 'get_product_by_id' }, body.productId)
       .toPromise()
       .then((data) => data);
-
 
     const canBuy = await this._canBuy(user, product);
 
@@ -93,17 +81,18 @@ export class AppService {
     const orderData = {
       user,
       product,
-      order:body
-    }
-
-
+      order: body,
+    };
 
     this.product
       .send({ cmd: 'create_order' }, orderData)
       .toPromise()
       .then((data) => data);
 
-    return {status:true, message:'Your order is preparing you can watch from /orders'};
+    return {
+      status: true,
+      message: 'Your order is preparing you can watch from /orders',
+    };
   }
 
   private async _canBuy(user: IUser, product: any): Promise<boolean> {
@@ -114,6 +103,46 @@ export class AppService {
     }
 
     return canBuy;
+  }
+
+  async getAllOrders() {
+    const result = await this.product
+      .send({ cmd: 'get_all_orders' }, {})
+      .toPromise()
+      .then((data) => data);
+    return result;
+  }
+
+  async getAllLoans() {
+    const result = await this.product
+      .send({ cmd: 'get_all_loans' }, {})
+      .toPromise()
+      .then((data) => data);
+    return result;
+  }
+
+  async getAllProducts(limit: string, page: string, search: string, sortBy:string, sortType:string) {
+    const data = {
+      limit,
+      page,
+      search,
+      sortType,
+      sortBy
+    };
+
+    const result = await this.product
+      .send({ cmd: 'get_all_products' }, data)
+      .toPromise()
+      .then((data) => data);
+    return result;
+  }
+
+  async getAllInvoices() {
+    const result = await this.product
+      .send({ cmd: 'get_all_invoices' }, {})
+      .toPromise()
+      .then((data) => data);
+    return result;
   }
 
   async validateUser(token: string) {
